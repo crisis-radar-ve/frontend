@@ -33,11 +33,27 @@ export default function ReportRow({ report }: Props) {
 
           <p className="text-slate-900 font-medium mb-1">{report.summary}</p>
 
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 mb-2">
             <span>📍 {report.location}</span>
             <span>🔗 {report.sourceHandle}</span>
             <span>✅ Confianza {Math.round(report.confidence * 100)}%</span>
           </div>
+
+          {report.media.length > 0 && (
+            <div className="flex gap-2">
+              {report.media.map((m) => (
+                <div key={m.id} className="w-16 h-16 rounded overflow-hidden border border-slate-200">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={m.thumbnailUrl || m.url}
+                    alt=""
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="flex md:flex-col gap-2">

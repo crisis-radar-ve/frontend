@@ -42,6 +42,7 @@ export default function IncidentCard({ incident }: Props) {
         <span>🕒 {incident.lastSeen}</span>
         <span>🔗 {incident.sourceCount} fuente{incident.sourceCount > 1 ? 's' : ''}</span>
         <span>✅ Confianza {Math.round(incident.confidence * 100)}%</span>
+        {incident.media.length > 0 && <span>📷 {incident.media.length}</span>}
       </div>
     </div>
   );

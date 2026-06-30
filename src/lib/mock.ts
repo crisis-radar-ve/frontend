@@ -13,6 +13,13 @@ export type Category =
 export type Urgency = 'low' | 'medium' | 'high';
 export type Visibility = 'public' | 'responders_only' | 'reviewer_only';
 
+export interface MediaItem {
+  id: string;
+  url: string;
+  thumbnailUrl: string;
+  caption?: string;
+}
+
 export interface Incident {
   id: string;
   title: string;
@@ -25,6 +32,7 @@ export interface Incident {
   lastSeen: string;
   status: 'active' | 'resolved' | 'closed';
   visibility: Visibility;
+  media: MediaItem[];
 }
 
 export interface Report {
@@ -38,6 +46,7 @@ export interface Report {
   confidence: number;
   createdAt: string;
   status: 'pending' | 'approved' | 'rejected' | 'duplicate';
+  media: MediaItem[];
 }
 
 export const categoryLabels: Record<Category, string> = {
@@ -80,6 +89,14 @@ export const mockIncidents: Incident[] = [
     lastSeen: 'Hace 25 min',
     status: 'active',
     visibility: 'public',
+    media: [
+      {
+        id: 'm1',
+        url: 'https://images.unsplash.com/photo-1504754524776-8f4f37790ca0?w=800&q=80',
+        thumbnailUrl: 'https://images.unsplash.com/photo-1504754524776-8f4f37790ca0?w=200&q=60',
+        caption: 'Vía bloqueada',
+      },
+    ],
   },
   {
     id: '2',
@@ -94,6 +111,7 @@ export const mockIncidents: Incident[] = [
     lastSeen: 'Hace 1 h',
     status: 'active',
     visibility: 'public',
+    media: [],
   },
   {
     id: '3',
@@ -108,6 +126,14 @@ export const mockIncidents: Incident[] = [
     lastSeen: 'Hace 2 h',
     status: 'active',
     visibility: 'public',
+    media: [
+      {
+        id: 'm2',
+        url: 'https://images.unsplash.com/photo-1587351021759-3e566b2af12a?w=800&q=80',
+        thumbnailUrl: 'https://images.unsplash.com/photo-1587351021759-3e566b2af12a?w=200&q=60',
+        caption: 'Lista de insumos',
+      },
+    ],
   },
   {
     id: '4',
@@ -122,6 +148,20 @@ export const mockIncidents: Incident[] = [
     lastSeen: 'Hace 3 h',
     status: 'active',
     visibility: 'public',
+    media: [
+      {
+        id: 'm3',
+        url: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=800&q=80',
+        thumbnailUrl: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=200&q=60',
+        caption: 'Refugio',
+      },
+      {
+        id: 'm4',
+        url: 'https://images.unsplash.com/photo-1531206715517-5c0ba140b2b8?w=800&q=80',
+        thumbnailUrl: 'https://images.unsplash.com/photo-1531206715517-5c0ba140b2b8?w=200&q=60',
+        caption: 'Donaciones',
+      },
+    ],
   },
   {
     id: '5',
@@ -136,6 +176,14 @@ export const mockIncidents: Incident[] = [
     lastSeen: 'Hace 30 min',
     status: 'active',
     visibility: 'responders_only',
+    media: [
+      {
+        id: 'm5',
+        url: 'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=800&q=80',
+        thumbnailUrl: 'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=200&q=60',
+        caption: 'Posible ubicación',
+      },
+    ],
   },
 ];
 
@@ -151,6 +199,13 @@ export const mockReports: Report[] = [
     confidence: 0.89,
     createdAt: 'Hace 25 min',
     status: 'pending',
+    media: [
+      {
+        id: 'rm1',
+        url: 'https://images.unsplash.com/photo-1504754524776-8f4f37790ca0?w=800&q=80',
+        thumbnailUrl: 'https://images.unsplash.com/photo-1504754524776-8f4f37790ca0?w=200&q=60',
+      },
+    ],
   },
   {
     id: 'r2',
@@ -163,6 +218,7 @@ export const mockReports: Report[] = [
     confidence: 0.81,
     createdAt: 'Hace 1 h',
     status: 'pending',
+    media: [],
   },
   {
     id: 'r3',
@@ -175,6 +231,7 @@ export const mockReports: Report[] = [
     confidence: 0.34,
     createdAt: 'Hace 2 h',
     status: 'pending',
+    media: [],
   },
   {
     id: 'r4',
@@ -187,5 +244,12 @@ export const mockReports: Report[] = [
     confidence: 0.77,
     createdAt: 'Hace 3 h',
     status: 'pending',
+    media: [
+      {
+        id: 'rm2',
+        url: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=800&q=80',
+        thumbnailUrl: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=200&q=60',
+      },
+    ],
   },
 ];

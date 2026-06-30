@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from 'react';
+import MediaUploader from '@/components/MediaUploader';
 
 export default function SubmitPage() {
   const [tab, setTab] = useState<'link' | 'text' | 'screenshot'>('link');
@@ -56,10 +57,11 @@ export default function SubmitPage() {
         )}
 
         {tab === 'screenshot' && (
-          <div className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center">
-            <p className="text-sm text-slate-500">
-              Arrastra una captura aquí o haz clic para seleccionar
-            </p>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Fotos / capturas
+            </label>
+            <MediaUploader />
           </div>
         )}
 

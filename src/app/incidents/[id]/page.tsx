@@ -1,5 +1,7 @@
 import { notFound } from 'next/navigation';
 import { mockIncidents, categoryLabels, categoryColors } from '@/lib/mock';
+import MediaGallery from '@/components/MediaGallery';
+import ShareCard from '@/components/ShareCard';
 
 interface Props {
   params: { id: string };
@@ -29,6 +31,10 @@ export default function IncidentDetailPage({ params }: Props) {
         </h2>
         <p className="text-slate-800 leading-relaxed">{incident.summary}</p>
       </div>
+
+      <MediaGallery media={incident.media} />
+
+      <ShareCard incident={incident} />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
         <div className="bg-white rounded-lg border border-slate-200 p-4">
