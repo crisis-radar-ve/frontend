@@ -11,14 +11,19 @@ interface Props {
 export default function ShareCard({ incident }: Props) {
   const cardRef = useRef<HTMLDivElement>(null);
 
-  const download = useCallback(async () => {
-    if (!cardRef.current) return;
-    const dataUrl = await toPng(cardRef.current, { pixelRatio: 2 });
+  const generateCardDataUrl = useCallback(async () => {
+    if (!cardRef.current) return '';
+    return toPng(cardRef.current, { pixelRatio: 2 });
+  }, []);
+
+  const download = async () => {
+    const dataUrl = await generateCardDataUrl();
+    if (!dataUrl) return;
     const link = document.createElement('a');
     link.download = `crisis-radar-${incident.id}.png`;
     link.href = dataUrl;
     link.click();
-  }, [incident.id]);
+  };
 
   const shareX = () => {
     const text = encodeURIComponent(
@@ -27,52 +32,55 @@ export default function ShareCard({ incident }: Props) {
     window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
   };
 
-  const shareIG = () => {
-    download();
+  const shareIG = async () => {
+    await download();
     alert('Imagen descargada. Ábrela en Instagram para compartirla.');
   };
 
   return (
-    <div className="bg-white rounded-lg border border-slate-200 p-6 mb-6">
+    <div className="bg-white rounded-lg border border-slate-200 p-4">
       <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">
         Compartir
       </h2>
 
-      <div
-        ref={cardRef}
-        className="bg-slate-900 text-white p-6 rounded-xl max-w-md mx-auto mb-4"
-      >
-        <div className="flex items-center gap-2 mb-4">
-          <span className="w-2 h-2 rounded-full bg-crisis-500 animate-pulse" />
-          <span className="font-bold text-sm">Crisis Radar VE</span>
-        </div>
-
-        <span
-          className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-medium mb-3 ${
-            categoryColors[incident.category]
-          }`}
+      {/* Hidden card used only for image generation */}
+      <div className="sr-only">
+        <div
+          ref={cardRef}
+          className="bg-slate-900 text-white p-6 rounded-xl w-[400px]"
         >
-          {categoryLabels[incident.category]}
-        </span>
+          <div className="flex items-center gap-2 mb-4">
+            <span className="w-2 h-2 rounded-full bg-crisis-500" />
+            <span className="font-bold text-sm">Crisis Radar VE</span>
+          </div>
 
-        <h3 className="text-lg font-bold mb-2 leading-tight">{incident.title}</h3>
-        <p className="text-sm text-slate-300 mb-4 line-clamp-3">{incident.summary}</p>
+          <span
+            className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-medium mb-3 ${
+              categoryColors[incident.category]
+            }`}
+          >
+            {categoryLabels[incident.category]}
+          </span>
 
-        <div className="space-y-1 text-xs text-slate-400">
-          <p>📍 {incident.location}</p>
-          <p>
-            🚨 Urgencia:{' '}
-            {incident.urgency === 'high' ? 'Alta' : incident.urgency === 'medium' ? 'Media' : 'Baja'}
-          </p>
-          <p>✅ Confianza: {Math.round(incident.confidence * 100)}%</p>
-        </div>
+          <h3 className="text-lg font-bold mb-2 leading-tight">{incident.title}</h3>
+          <p className="text-sm text-slate-300 mb-4 line-clamp-3">{incident.summary}</p>
 
-        <div className="mt-4 pt-4 border-t border-slate-700 text-xs text-slate-500">
-          Información pública sujeta a revisión. Verifica con fuentes oficiales.
+          <div className="space-y-1 text-xs text-slate-400">
+            <p>📍 {incident.location}</p>
+            <p>
+              🚨 Urgencia:{' '}
+              {incident.urgency === 'high' ? 'Alta' : incident.urgency === 'medium' ? 'Media' : 'Baja'}
+            </p>
+            <p>✅ Confianza: {Math.round(incident.confidence * 100)}%</p>
+          </div>
+
+          <div className="mt-4 pt-4 border-t border-slate-700 text-xs text-slate-500">
+            Información pública sujeta a revisión. Verifica con fuentes oficiales.
+          </div>
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2 justify-center">
+      <div className="flex flex-wrap gap-2">
         <button
           onClick={download}
           className="px-4 py-2 text-sm font-medium text-white bg-crisis-600 rounded-lg hover:bg-crisis-700"

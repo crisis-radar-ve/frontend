@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from 'react';
 import IncidentCard from '@/components/Dashboard/IncidentCard';
-import IncidentDetailModal from '@/components/Dashboard/IncidentDetailModal';
 import FilterBar from '@/components/Dashboard/FilterBar';
 import { mockIncidents, Incident, Category } from '@/lib/mock';
 
@@ -11,7 +10,7 @@ type SortKey = 'sourceCount' | 'confidence' | 'lastSeen' | 'urgency';
 export default function DashboardPage() {
   const [selectedCategory, setSelectedCategory] = useState<Category | 'ALL'>('ALL');
   const [sortBy, setSortBy] = useState<SortKey>('sourceCount');
-  const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     let list =
@@ -76,7 +75,10 @@ export default function DashboardPage() {
             <IncidentCard
               key={incident.id}
               incident={incident}
-              onClick={setSelectedIncident}
+              isExpanded={expandedId === incident.id}
+              onToggle={() =>
+                setExpandedId(expandedId === incident.id ? null : incident.id)
+              }
             />
           ))}
           {filtered.length === 0 && (
@@ -108,12 +110,6 @@ export default function DashboardPage() {
         </aside>
       </div>
 
-      {selectedIncident && (
-        <IncidentDetailModal
-          incident={selectedIncident}
-          onClose={() => setSelectedIncident(null)}
-        />
-      )}
     </div>
   );
 }
