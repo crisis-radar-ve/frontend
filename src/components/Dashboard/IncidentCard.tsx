@@ -19,58 +19,61 @@ export default function IncidentCard({ incident, isExpanded, onToggle }: Props) 
       <div className="flex items-start">
         <button
           onClick={onToggle}
-          className="flex-1 text-left p-4 flex items-start justify-between gap-3"
+          className="flex-1 text-left p-4"
         >
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <span
-                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                  categoryColors[incident.category]
-                }`}
-              >
-                {categoryLabels[incident.category]}
-              </span>
-              <span
-                className={`text-xs font-semibold uppercase ${
-                  incident.urgency === 'high'
-                    ? 'text-red-600'
-                    : incident.urgency === 'medium'
-                    ? 'text-amber-600'
-                    : 'text-slate-500'
-                }`}
-              >
-                {incident.urgency === 'high' ? 'Alta' : incident.urgency === 'medium' ? 'Media' : 'Baja'}
-              </span>
-            </div>
-
-            <h3 className="font-semibold text-slate-900 mb-1">{incident.title}</h3>
-
-            <p className={`text-sm text-slate-600 ${isExpanded ? '' : 'line-clamp-2'}`}>
-              {incident.summary}
-            </p>
-
-            {!isExpanded && (
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 mt-2">
-                <span>📍 {incident.location}</span>
-                <span>🕒 {incident.lastSeen}</span>
-                <span>🔗 {incident.sourceCount} reporte{incident.sourceCount > 1 ? 's' : ''}</span>
-                <span>✅ Confianza {Math.round(incident.confidence * 100)}%</span>
-                {incident.media.length > 0 && <span>📷 {incident.media.length}</span>}
-              </div>
-            )}
+          <div className="flex items-center gap-2 mb-2">
+            <span
+              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                categoryColors[incident.category]
+              }`}
+            >
+              {categoryLabels[incident.category]}
+            </span>
+            <span
+              className={`text-xs font-semibold uppercase ${
+                incident.urgency === 'high'
+                  ? 'text-red-600'
+                  : incident.urgency === 'medium'
+                  ? 'text-amber-600'
+                  : 'text-slate-500'
+              }`}
+            >
+              {incident.urgency === 'high' ? 'Alta' : incident.urgency === 'medium' ? 'Media' : 'Baja'}
+            </span>
           </div>
 
-          <motion.span
-            animate={{ rotate: isExpanded ? 180 : 0 }}
-            transition={{ duration: 0.25 }}
-            className="text-slate-400 text-lg leading-none pt-1"
-          >
-            ▼
-          </motion.span>
+          <h3 className="font-semibold text-slate-900 mb-1">{incident.title}</h3>
+
+          <p className={`text-sm text-slate-600 ${isExpanded ? '' : 'line-clamp-2'}`}>
+            {incident.summary}
+          </p>
+
+          {!isExpanded && (
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 mt-2">
+              <span>📍 {incident.location}</span>
+              <span>🕒 {incident.lastSeen}</span>
+              <span>🔗 {incident.sourceCount} reporte{incident.sourceCount > 1 ? 's' : ''}</span>
+              <span>✅ Confianza {Math.round(incident.confidence * 100)}%</span>
+              {incident.media.length > 0 && <span>📷 {incident.media.length}</span>}
+            </div>
+          )}
         </button>
 
-        <div className="pt-3 pr-3">
+        <div className="flex items-start gap-1 pt-2 pr-2">
           <ShareMenu incident={incident} />
+          <button
+            onClick={onToggle}
+            className="p-1.5 text-slate-400 hover:text-slate-600 transition-colors rounded-md hover:bg-slate-100"
+            aria-label={isExpanded ? 'Contraer' : 'Expandir'}
+          >
+            <motion.span
+              animate={{ rotate: isExpanded ? 180 : 0 }}
+              transition={{ duration: 0.25 }}
+              className="block text-lg leading-none"
+            >
+              ▼
+            </motion.span>
+          </button>
         </div>
       </div>
 
