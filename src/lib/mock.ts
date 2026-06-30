@@ -32,6 +32,7 @@ export interface Incident {
   urgency: Urgency;
   confidence: number;
   sourceCount: number;
+  sourceUrls: string[];
   lastSeen: string;
   status: 'active' | 'resolved' | 'closed';
   visibility: Visibility;
@@ -89,6 +90,12 @@ export const mockIncidents: Incident[] = [
     urgency: 'high',
     confidence: 0.91,
     sourceCount: 4,
+    sourceUrls: [
+      'https://instagram.com/p/abc123',
+      'https://twitter.com/user/status/xyz',
+      'https://instagram.com/p/def456',
+      'https://facebook.com/groups/xxx',
+    ],
     lastSeen: 'Hace 25 min',
     status: 'active',
     visibility: 'public',
@@ -112,6 +119,10 @@ export const mockIncidents: Incident[] = [
     urgency: 'high',
     confidence: 0.84,
     sourceCount: 2,
+    sourceUrls: [
+      'https://instagram.com/p/missing1',
+      'https://twitter.com/familia/status/123',
+    ],
     lastSeen: 'Hace 1 h',
     status: 'active',
     visibility: 'public',
@@ -127,6 +138,7 @@ export const mockIncidents: Incident[] = [
     urgency: 'medium',
     confidence: 0.88,
     sourceCount: 1,
+    sourceUrls: ['https://instagram.com/p/hospital'],
     lastSeen: 'Hace 2 h',
     status: 'active',
     visibility: 'public',
@@ -150,6 +162,11 @@ export const mockIncidents: Incident[] = [
     urgency: 'medium',
     confidence: 0.79,
     sourceCount: 3,
+    sourceUrls: [
+      'https://instagram.com/p/refugio1',
+      'https://twitter.com/voluntario/status/456',
+      'https://facebook.com/groups/yyy',
+    ],
     lastSeen: 'Hace 3 h',
     status: 'active',
     visibility: 'public',
@@ -180,6 +197,7 @@ export const mockIncidents: Incident[] = [
     urgency: 'high',
     confidence: 0.62,
     sourceCount: 1,
+    sourceUrls: ['https://instagram.com/p/ubicado'],
     lastSeen: 'Hace 30 min',
     status: 'active',
     visibility: 'responders_only',

@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Incident, categoryLabels, categoryColors } from '@/lib/mock';
 import MediaGallery from '@/components/MediaGallery';
-import ShareCard from '@/components/ShareCard';
+import ShareMenu from '@/components/ShareMenu';
 
 interface Props {
   incident: Incident;
@@ -16,55 +16,63 @@ export default function IncidentCard({ incident, isExpanded, onToggle }: Props) 
         isExpanded ? 'border-crisis-300 shadow-md' : 'border-slate-200 hover:shadow-sm'
       }`}
     >
-      <button
-        onClick={onToggle}
-        className="w-full text-left p-4 flex items-start justify-between gap-3"
-      >
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-2">
-            <span
-              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                categoryColors[incident.category]
-              }`}
-            >
-              {categoryLabels[incident.category]}
-            </span>
-            <span
-              className={`text-xs font-semibold uppercase ${
-                incident.urgency === 'high'
-                  ? 'text-red-600'
-                  : incident.urgency === 'medium'
-                  ? 'text-amber-600'
-                  : 'text-slate-500'
-              }`}
-            >
-              {incident.urgency === 'high' ? 'Alta' : incident.urgency === 'medium' ? 'Media' : 'Baja'}
-            </span>
-          </div>
-
-          <h3 className="font-semibold text-slate-900 mb-1">{incident.title}</h3>
-
-          <p className={`text-sm text-slate-600 ${isExpanded ? '' : 'line-clamp-2'}`}>
-            {incident.summary}
-          </p>
-
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 mt-2">
-            <span>📍 {incident.location}</span>
-            <span>🕒 {incident.lastSeen}</span>
-            <span>🔗 {incident.sourceCount} reporte{incident.sourceCount > 1 ? 's' : ''}</span>
-            <span>✅ Confianza {Math.round(incident.confidence * 100)}%</span>
-            {incident.media.length > 0 && <span>📷 {incident.media.length}</span>}
-          </div>
-        </div>
-
-        <motion.span
-          animate={{ rotate: isExpanded ? 180 : 0 }}
-          transition={{ duration: 0.25 }}
-          className="text-slate-400 text-lg leading-none pt-1"
+      <div className="flex items-start">
+        <button
+          onClick={onToggle}
+          className="flex-1 text-left p-4 flex items-start justify-between gap-3"
         >
-          ▼
-        </motion.span>
-      </button>
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-2">
+              <span
+                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  categoryColors[incident.category]
+                }`}
+              >
+                {categoryLabels[incident.category]}
+              </span>
+              <span
+                className={`text-xs font-semibold uppercase ${
+                  incident.urgency === 'high'
+                    ? 'text-red-600'
+                    : incident.urgency === 'medium'
+                    ? 'text-amber-600'
+                    : 'text-slate-500'
+                }`}
+              >
+                {incident.urgency === 'high' ? 'Alta' : incident.urgency === 'medium' ? 'Media' : 'Baja'}
+              </span>
+            </div>
+
+            <h3 className="font-semibold text-slate-900 mb-1">{incident.title}</h3>
+
+            <p className={`text-sm text-slate-600 ${isExpanded ? '' : 'line-clamp-2'}`}>
+              {incident.summary}
+            </p>
+
+            {!isExpanded && (
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 mt-2">
+                <span>📍 {incident.location}</span>
+                <span>🕒 {incident.lastSeen}</span>
+                <span>🔗 {incident.sourceCount} reporte{incident.sourceCount > 1 ? 's' : ''}</span>
+                <span>✅ Confianza {Math.round(incident.confidence * 100)}%</span>
+                {incident.media.length > 0 && <span>📷 {incident.media.length}</span>}
+              </div>
+            )}
+          </div>
+
+          <motion.span
+            animate={{ rotate: isExpanded ? 180 : 0 }}
+            transition={{ duration: 0.25 }}
+            className="text-slate-400 text-lg leading-none pt-1"
+          >
+            ▼
+          </motion.span>
+        </button>
+
+        <div className="pt-3 pr-3">
+          <ShareMenu incident={incident} />
+        </div>
+      </div>
 
       <AnimatePresence initial={false}>
         {isExpanded && (
@@ -119,7 +127,27 @@ export default function IncidentCard({ incident, isExpanded, onToggle }: Props) 
                 </div>
               </div>
 
-              <ShareCard incident={incident} />
+              <div className="mb-4">
+                <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+                  Fuentes
+                </h4>
+                <ul className="space-y-1">
+                  {incident.sourceUrls.map((url, idx) => (
+                    <li key={idx}>
+                      <a
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-crisis-600 hover:underline break-all"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {url.length > 50 ? `${url.slice(0, 50)}...` : url} ↗
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
             </div>
           </motion.div>
         )}
