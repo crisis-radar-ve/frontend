@@ -18,6 +18,9 @@ export default function Header() {
           <Link href="/submit" className="text-slate-600 hover:text-crisis-600">
             Enviar
           </Link>
+          <Link href="/admin" className="text-slate-600 hover:text-crisis-600">
+            Admin
+          </Link>
         </nav>
       </div>
     </header>
