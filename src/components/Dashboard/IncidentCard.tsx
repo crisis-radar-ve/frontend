@@ -1,3 +1,4 @@
+import { motion, AnimatePresence } from 'framer-motion';
 import { Incident, categoryLabels, categoryColors } from '@/lib/mock';
 import MediaGallery from '@/components/MediaGallery';
 import ShareCard from '@/components/ShareCard';
@@ -56,56 +57,80 @@ export default function IncidentCard({ incident, isExpanded, onToggle }: Props) 
           </div>
         </div>
 
-        <span className="text-slate-400 text-lg leading-none pt-1">
-          {isExpanded ? '▲' : '▼'}
-        </span>
+        <motion.span
+          animate={{ rotate: isExpanded ? 180 : 0 }}
+          transition={{ duration: 0.25 }}
+          className="text-slate-400 text-lg leading-none pt-1"
+        >
+          ▼
+        </motion.span>
       </button>
 
-      {isExpanded && (
-        <div className="px-4 pb-4 border-t border-slate-100 pt-4">
-          <MediaGallery media={incident.media} />
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-            <div className="bg-slate-50 rounded-lg p-3">
-              <span className="block text-xs text-slate-500">Ubicación</span>
-              <span className="text-sm font-medium text-slate-900">{incident.location}</span>
-            </div>
-            <div className="bg-slate-50 rounded-lg p-3">
-              <span className="block text-xs text-slate-500">Urgencia</span>
-              <span
-                className={`text-sm font-medium ${
-                  incident.urgency === 'high'
-                    ? 'text-red-600'
-                    : incident.urgency === 'medium'
-                    ? 'text-amber-600'
-                    : 'text-slate-600'
-                }`}
-              >
-                {incident.urgency === 'high' ? 'Alta' : incident.urgency === 'medium' ? 'Media' : 'Baja'}
-              </span>
-            </div>
-            <div className="bg-slate-50 rounded-lg p-3">
-              <span className="block text-xs text-slate-500">Confianza IA</span>
-              <span className="text-sm font-medium text-slate-900">
-                {Math.round(incident.confidence * 100)}%
-              </span>
-            </div>
-            <div className="bg-slate-50 rounded-lg p-3">
-              <span className="block text-xs text-slate-500">Reportes</span>
-              <span className="text-sm font-medium text-slate-900">{incident.sourceCount}</span>
-            </div>
-          </div>
-
-          <ShareCard incident={incident} />
-
-          <button
-            onClick={onToggle}
-            className="mt-4 w-full py-2 text-sm text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200"
+      <AnimatePresence initial={false}>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+            className="overflow-hidden"
           >
-            Contraer
-          </button>
-        </div>
-      )}
+            <div className="px-4 pb-4 border-t border-slate-100 pt-4">
+              <MediaGallery media={incident.media} />
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                <div className="bg-slate-50 rounded-lg p-3">
+                  <span className="block text-xs text-slate-500">Ubicación</span>
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                      incident.location
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm font-medium text-crisis-600 hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {incident.location} ↗
+                  </a>
+                </div>
+                <div className="bg-slate-50 rounded-lg p-3">
+                  <span className="block text-xs text-slate-500">Urgencia</span>
+                  <span
+                    className={`text-sm font-medium ${
+                      incident.urgency === 'high'
+                        ? 'text-red-600'
+                        : incident.urgency === 'medium'
+                        ? 'text-amber-600'
+                        : 'text-slate-600'
+                    }`}
+                  >
+                    {incident.urgency === 'high' ? 'Alta' : incident.urgency === 'medium' ? 'Media' : 'Baja'}
+                  </span>
+                </div>
+                <div className="bg-slate-50 rounded-lg p-3">
+                  <span className="block text-xs text-slate-500">Confianza IA</span>
+                  <span className="text-sm font-medium text-slate-900">
+                    {Math.round(incident.confidence * 100)}%
+                  </span>
+                </div>
+                <div className="bg-slate-50 rounded-lg p-3">
+                  <span className="block text-xs text-slate-500">Reportes</span>
+                  <span className="text-sm font-medium text-slate-900">{incident.sourceCount}</span>
+                </div>
+              </div>
+
+              <ShareCard incident={incident} />
+
+              <button
+                onClick={onToggle}
+                className="mt-4 w-full py-2 text-sm text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
+              >
+                Contraer
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
