@@ -2,16 +2,35 @@
 
 import { useState, useMemo } from 'react';
 import IncidentCard from '@/components/Dashboard/IncidentCard';
+import IncidentDetailModal from '@/components/Dashboard/IncidentDetailModal';
 import FilterBar from '@/components/Dashboard/FilterBar';
-import { mockIncidents, Category } from '@/lib/mock';
+import { mockIncidents, Incident, Category } from '@/lib/mock';
+
+type SortKey = 'sourceCount' | 'confidence' | 'lastSeen' | 'urgency';
 
 export default function DashboardPage() {
   const [selectedCategory, setSelectedCategory] = useState<Category | 'ALL'>('ALL');
+  const [sortBy, setSortBy] = useState<SortKey>('sourceCount');
+  const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
 
   const filtered = useMemo(() => {
-    if (selectedCategory === 'ALL') return mockIncidents;
-    return mockIncidents.filter((i) => i.category === selectedCategory);
-  }, [selectedCategory]);
+    let list =
+      selectedCategory === 'ALL'
+        ? [...mockIncidents]
+        : mockIncidents.filter((i) => i.category === selectedCategory);
+
+    list.sort((a, b) => {
+      if (sortBy === 'sourceCount') return b.sourceCount - a.sourceCount;
+      if (sortBy === 'confidence') return b.confidence - a.confidence;
+      if (sortBy === 'urgency') {
+        const order = { high: 3, medium: 2, low: 1 };
+        return order[b.urgency] - order[a.urgency];
+      }
+      return 0;
+    });
+
+    return list;
+  }, [selectedCategory, sortBy]);
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
@@ -34,14 +53,31 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="mb-6">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
         <FilterBar selected={selectedCategory} onSelect={setSelectedCategory} />
+
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-slate-500">Ordenar por:</span>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as SortKey)}
+            className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-crisis-500"
+          >
+            <option value="sourceCount">Más reportes</option>
+            <option value="confidence">Mayor confianza</option>
+            <option value="urgency">Mayor urgencia</option>
+          </select>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
           {filtered.map((incident) => (
-            <IncidentCard key={incident.id} incident={incident} />
+            <IncidentCard
+              key={incident.id}
+              incident={incident}
+              onClick={setSelectedIncident}
+            />
           ))}
           {filtered.length === 0 && (
             <p className="text-slate-500 text-center py-12">
@@ -71,6 +107,13 @@ export default function DashboardPage() {
           </div>
         </aside>
       </div>
+
+      {selectedIncident && (
+        <IncidentDetailModal
+          incident={selectedIncident}
+          onClose={() => setSelectedIncident(null)}
+        />
+      )}
     </div>
   );
 }
