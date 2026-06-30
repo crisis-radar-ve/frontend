@@ -1,10 +1,25 @@
-import { Report, categoryLabels, categoryColors } from '@/lib/mock';
+import { categoryLabels, categoryColors } from '@/lib/mock';
+
+interface Report {
+  id: string;
+  category: string;
+  summary: string;
+  sourceUrl: string;
+  sourceHandle: string;
+  location: string;
+  urgency: 'low' | 'medium' | 'high';
+  confidence: number;
+  createdAt: string;
+  status: string;
+  media: { id: string; url: string; thumbnailUrl: string }[];
+}
 
 interface Props {
   report: Report;
+  onAction: (reportId: string, action: string) => void;
 }
 
-export default function ReportRow({ report }: Props) {
+export default function ReportRow({ report, onAction }: Props) {
   return (
     <div className="bg-white rounded-lg border border-slate-200 p-4">
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
@@ -12,10 +27,10 @@ export default function ReportRow({ report }: Props) {
           <div className="flex items-center gap-2 mb-2">
             <span
               className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                categoryColors[report.category]
+                categoryColors[report.category as keyof typeof categoryColors] || 'bg-slate-100 text-slate-800'
               }`}
             >
-              {categoryLabels[report.category]}
+              {categoryLabels[report.category as keyof typeof categoryLabels] || report.category}
             </span>
             <span
               className={`text-xs font-semibold uppercase ${
@@ -35,7 +50,17 @@ export default function ReportRow({ report }: Props) {
 
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 mb-2">
             <span>📍 {report.location}</span>
-            <span>🔗 {report.sourceHandle}</span>
+            <span>
+              🔗{' '}
+              <a
+                href={report.sourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-crisis-600 hover:underline"
+              >
+                {report.sourceHandle}
+              </a>
+            </span>
             <span>✅ Confianza {Math.round(report.confidence * 100)}%</span>
           </div>
 
@@ -57,13 +82,22 @@ export default function ReportRow({ report }: Props) {
         </div>
 
         <div className="flex md:flex-col gap-2">
-          <button className="px-3 py-1.5 text-sm font-medium text-white bg-emerald-600 rounded hover:bg-emerald-700">
+          <button
+            onClick={() => onAction(report.id, 'approve')}
+            className="px-3 py-1.5 text-sm font-medium text-white bg-emerald-600 rounded hover:bg-emerald-700"
+          >
             Aprobar
           </button>
-          <button className="px-3 py-1.5 text-sm font-medium text-slate-700 bg-slate-100 rounded hover:bg-slate-200">
+          <button
+            onClick={() => onAction(report.id, 'duplicate')}
+            className="px-3 py-1.5 text-sm font-medium text-slate-700 bg-slate-100 rounded hover:bg-slate-200"
+          >
             Duplicado
           </button>
-          <button className="px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded hover:bg-red-700">
+          <button
+            onClick={() => onAction(report.id, 'reject')}
+            className="px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded hover:bg-red-700"
+          >
             Rechazar
           </button>
         </div>

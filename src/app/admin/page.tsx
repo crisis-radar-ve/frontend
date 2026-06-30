@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Reviewer, mockReviewers } from '@/lib/users';
 import { Category, categoryLabels, Urgency } from '@/lib/mock';
 import MediaUploader from '@/components/MediaUploader';
 import SourceUrlList from '@/components/SourceUrlList';
+import { api, setToken, clearToken } from '@/lib/api';
 
 const categories: Category[] = [
   'HELP_REQUESTED',
@@ -21,7 +22,14 @@ const categories: Category[] = [
 
 export default function AdminPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'reviewers' | 'publish'>('reviewers');
+  const [loginForm, setLoginForm] = useState({ email: '', password: '' });
+
+  useEffect(() => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('crisisradar_token') : null;
+    if (token) setIsLoggedIn(true);
+  }, []);
 
   // Reviewers state
   const [reviewers, setReviewers] = useState<Reviewer[]>(mockReviewers);
@@ -46,20 +54,60 @@ export default function AdminPage() {
     publishImmediately: false,
   });
 
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError(null);
+    try {
+      const res = await api.login(loginForm.email, loginForm.password);
+      setToken(res.access_token);
+      setIsLoggedIn(true);
+    } catch (err) {
+      setLoginError('Credenciales inválidas');
+    }
+  };
+
+  const handleLogout = () => {
+    clearToken();
+    setIsLoggedIn(false);
+  };
+
   if (!isLoggedIn) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
-        <div className="bg-white rounded-xl border border-slate-200 p-8 max-w-sm w-full text-center">
-          <h1 className="text-xl font-bold text-slate-900 mb-2">Administración</h1>
-          <p className="text-sm text-slate-500 mb-6">
+        <div className="bg-white rounded-xl border border-slate-200 p-8 max-w-sm w-full">
+          <h1 className="text-xl font-bold text-slate-900 mb-2 text-center">Administración</h1>
+          <p className="text-sm text-slate-500 mb-6 text-center">
             Acceso restringido a editores y administradores.
           </p>
-          <button
-            onClick={() => setIsLoggedIn(true)}
-            className="w-full bg-crisis-600 text-white font-medium py-2.5 rounded-lg hover:bg-crisis-700"
-          >
-            Iniciar sesión
-          </button>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Correo</label>
+              <input
+                type="email"
+                value={loginForm.email}
+                onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-crisis-500"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Contraseña</label>
+              <input
+                type="password"
+                value={loginForm.password}
+                onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-crisis-500"
+                required
+              />
+            </div>
+            {loginError && <p className="text-sm text-red-600">{loginError}</p>}
+            <button
+              type="submit"
+              className="w-full bg-crisis-600 text-white font-medium py-2.5 rounded-lg hover:bg-crisis-700"
+            >
+              Iniciar sesión
+            </button>
+          </form>
         </div>
       </div>
     );
@@ -124,7 +172,7 @@ export default function AdminPage() {
           <p className="text-sm text-slate-500 mt-1">Gestiona revisores y publica reportes.</p>
         </div>
         <button
-          onClick={() => setIsLoggedIn(false)}
+          onClick={handleLogout}
           className="text-sm text-slate-600 hover:text-crisis-600"
         >
           Cerrar sesión

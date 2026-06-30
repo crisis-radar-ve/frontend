@@ -1,22 +1,67 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import IncidentCard from '@/components/Dashboard/IncidentCard';
 import FilterBar from '@/components/Dashboard/FilterBar';
-import { mockIncidents, Incident, Category } from '@/lib/mock';
+import { api } from '@/lib/api';
+import { Category } from '@/lib/mock';
+
+interface Incident {
+  id: string;
+  title: string;
+  category: Category;
+  summary: string;
+  location: string;
+  urgency: 'low' | 'medium' | 'high';
+  confidence: number;
+  sourceCount: number;
+  sourceUrls: string[];
+  lastSeen: string;
+  status: 'active' | 'resolved' | 'closed';
+  visibility: 'public' | 'responders_only' | 'reviewer_only';
+  media: { id: string; type: 'image' | 'video'; url: string; thumbnailUrl: string; caption?: string }[];
+}
 
 type SortKey = 'sourceCount' | 'confidence' | 'lastSeen' | 'urgency';
 
 export default function DashboardPage() {
+  const [incidents, setIncidents] = useState<Incident[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<Category | 'ALL'>('ALL');
   const [sortBy, setSortBy] = useState<SortKey>('sourceCount');
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
+  useEffect(() => {
+    api
+      .getIncidents({ visibility: 'public' })
+      .then((data) => {
+        const mapped = data.map((item: any) => ({
+          id: item.id,
+          title: item.title,
+          category: item.category,
+          summary: item.public_summary || item.summary,
+          location: item.location,
+          urgency: item.urgency,
+          confidence: item.confidence,
+          sourceCount: item.report_count || 1,
+          sourceUrls: item.source_urls || [],
+          lastSeen: item.last_seen ? new Date(item.last_seen).toLocaleString('es-VE') : '',
+          status: item.status,
+          visibility: item.visibility,
+          media: item.media || [],
+        }));
+        setIncidents(mapped);
+      })
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  }, []);
+
   const filtered = useMemo(() => {
     let list =
       selectedCategory === 'ALL'
-        ? [...mockIncidents]
-        : mockIncidents.filter((i) => i.category === selectedCategory);
+        ? [...incidents]
+        : incidents.filter((i) => i.category === selectedCategory);
 
     list.sort((a, b) => {
       if (sortBy === 'sourceCount') return b.sourceCount - a.sourceCount;
@@ -29,7 +74,10 @@ export default function DashboardPage() {
     });
 
     return list;
-  }, [selectedCategory, sortBy]);
+  }, [incidents, selectedCategory, sortBy]);
+
+  if (loading) return <p className="p-6 text-slate-500">Cargando incidentes...</p>;
+  if (error) return <p className="p-6 text-red-600">Error: {error}</p>;
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
@@ -37,17 +85,13 @@ export default function DashboardPage() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Dashboard público</h1>
           <p className="text-sm text-slate-500 mt-1">
-            Incidentes verificados y aprobados por revisores. Información en tiempo real.
+            Incidentes verificados y aprobados por revisores.
           </p>
         </div>
         <div className="flex items-center gap-3 text-sm">
           <div className="bg-white px-3 py-2 rounded-lg border border-slate-200">
             <span className="block text-xs text-slate-500">Activos</span>
-            <span className="font-semibold text-slate-900">{mockIncidents.length}</span>
-          </div>
-          <div className="bg-white px-3 py-2 rounded-lg border border-slate-200">
-            <span className="block text-xs text-slate-500">Pendientes</span>
-            <span className="font-semibold text-crisis-600">12</span>
+            <span className="font-semibold text-slate-900">{incidents.length}</span>
           </div>
         </div>
       </div>
@@ -76,15 +120,11 @@ export default function DashboardPage() {
               key={incident.id}
               incident={incident}
               isExpanded={expandedId === incident.id}
-              onToggle={() =>
-                setExpandedId(expandedId === incident.id ? null : incident.id)
-              }
+              onToggle={() => setExpandedId(expandedId === incident.id ? null : incident.id)}
             />
           ))}
           {filtered.length === 0 && (
-            <p className="text-slate-500 text-center py-12">
-              No hay incidentes en esta categoría.
-            </p>
+            <p className="text-slate-500 text-center py-12">No hay incidentes públicos.</p>
           )}
         </div>
 
@@ -93,23 +133,8 @@ export default function DashboardPage() {
           <div className="aspect-square bg-slate-100 rounded flex items-center justify-center text-slate-400 text-sm">
             Mapa interactivo (próximamente)
           </div>
-          <div className="mt-4 space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-slate-600">Vargas</span>
-              <span className="font-medium">3 incidentes</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-slate-600">Distrito Capital</span>
-              <span className="font-medium">2 incidentes</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-slate-600">La Guaira</span>
-              <span className="font-medium">2 incidentes</span>
-            </div>
-          </div>
         </aside>
       </div>
-
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import MediaUploader from '@/components/MediaUploader';
 import SourceUrlList from '@/components/SourceUrlList';
+import { api, API_BASE } from '@/lib/api';
 import { Category, categoryLabels, Urgency } from '@/lib/mock';
 
 const categories: Category[] = [
@@ -29,14 +30,51 @@ export default function SubmitPage() {
     sourceUrls: [''],
     sourceHandle: '',
   });
+  const [files, setFiles] = useState<File[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
 
   const update = <K extends keyof typeof form>(key: K, value: typeof form[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert('Reporte enviado a revisión (modo prototipo)');
+    setSubmitting(true);
+    setMessage(null);
+
+    try {
+      if (tab === 'text') {
+        await api.submitText(form.summary);
+      } else if (tab === 'link') {
+        await api.submitLink(form.sourceUrls[0] || '', form.summary);
+      } else if (tab === 'screenshot') {
+        const data = new FormData();
+        files.forEach((file) => data.append('files', file));
+        if (form.summary) data.append('caption', form.summary);
+        const res = await fetch(`${API_BASE}/submit/screenshot`, {
+          method: 'POST',
+          body: data,
+        });
+        if (!res.ok) throw new Error('Error subiendo capturas');
+      }
+
+      setMessage('Enviado a revisión. Gracias.');
+      setForm({
+        category: '',
+        urgency: 'medium',
+        title: '',
+        summary: '',
+        location: '',
+        sourceUrls: [''],
+        sourceHandle: '',
+      });
+      setFiles([]);
+    } catch (err: any) {
+      setMessage(`Error: ${err.message}`);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -83,6 +121,8 @@ export default function SubmitPage() {
             <textarea
               rows={5}
               placeholder="Pega aquí el texto de la publicación..."
+              value={form.summary}
+              onChange={(e) => update('summary', e.target.value)}
               className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-crisis-500"
             />
           </div>
@@ -93,99 +133,34 @@ export default function SubmitPage() {
             <label className="block text-sm font-medium text-slate-700 mb-1">
               Fotos / capturas
             </label>
-            <MediaUploader />
+            <MediaUploader onFilesSelected={setFiles} />
           </div>
         )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Categoría *</label>
-            <select
-              value={form.category}
-              onChange={(e) => update('category', e.target.value as Category)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-crisis-500"
-              required
-            >
-              <option value="">Selecciona...</option>
-              {categories.map((c) => (
-                <option key={c} value={c}>
-                  {categoryLabels[c]}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Urgencia *</label>
-            <select
-              value={form.urgency}
-              onChange={(e) => update('urgency', e.target.value as Urgency)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-crisis-500"
-            >
-              <option value="low">Baja</option>
-              <option value="medium">Media</option>
-              <option value="high">Alta</option>
-            </select>
-          </div>
-        </div>
-
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Título *</label>
-          <input
-            type="text"
-            placeholder="Ej: Vía principal hacia La Guaira bloqueada"
-            value={form.title}
-            onChange={(e) => update('title', e.target.value)}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-crisis-500"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Resumen *</label>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Resumen</label>
           <textarea
-            rows={4}
-            placeholder="Describe lo que reportas..."
+            rows={3}
+            placeholder="Describe brevemente el reporte..."
             value={form.summary}
             onChange={(e) => update('summary', e.target.value)}
             className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-crisis-500"
-            required
           />
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Ubicación *</label>
-            <input
-              type="text"
-              placeholder="Ej: Autopista Caracas-La Guaira"
-              value={form.location}
-              onChange={(e) => update('location', e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-crisis-500"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Autor / cuenta fuente
-            </label>
-            <input
-              type="text"
-              placeholder="@usuario"
-              value={form.sourceHandle}
-              onChange={(e) => update('sourceHandle', e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-crisis-500"
-            />
-          </div>
         </div>
 
         <button
           type="submit"
-          className="w-full bg-crisis-600 text-white font-medium py-2.5 rounded-lg hover:bg-crisis-700 transition-colors"
+          disabled={submitting}
+          className="w-full bg-crisis-600 text-white font-medium py-2.5 rounded-lg hover:bg-crisis-700 disabled:opacity-50 transition-colors"
         >
-          Enviar a revisión
+          {submitting ? 'Enviando...' : 'Enviar a revisión'}
         </button>
+
+        {message && (
+          <p className={`text-sm ${message.startsWith('Error') ? 'text-red-600' : 'text-emerald-600'}`}>
+            {message}
+          </p>
+        )}
       </form>
     </div>
   );
