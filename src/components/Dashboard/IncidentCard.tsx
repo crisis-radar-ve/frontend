@@ -120,13 +120,6 @@ export default function IncidentCard({ incident, isExpanded, onToggle }: Props) 
               </div>
 
               <ShareCard incident={incident} />
-
-              <button
-                onClick={onToggle}
-                className="mt-4 w-full py-2 text-sm text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors"
-              >
-                Contraer
-              </button>
             </div>
           </motion.div>
         )}

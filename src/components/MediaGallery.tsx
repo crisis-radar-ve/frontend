@@ -28,7 +28,7 @@ export default function MediaGallery({ media }: Props) {
   return (
     <div className="mb-6">
       <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">
-        Imágenes / Videos
+        Multimedia
       </h2>
       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
         {media.map((item, idx) => (

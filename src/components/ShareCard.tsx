@@ -164,10 +164,10 @@ export default function ShareCard({ incident }: Props) {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-4">
         <button
           onClick={download}
-          className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-crisis-600 text-white hover:bg-crisis-700 transition-colors"
+          className="text-slate-500 hover:text-crisis-600 transition-colors"
           aria-label="Descargar imagen"
           title="Descargar imagen"
         >
@@ -176,20 +176,20 @@ export default function ShareCard({ incident }: Props) {
 
         <button
           onClick={shareX}
-          className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-slate-900 text-white hover:bg-slate-800 transition-colors"
+          className="text-slate-500 hover:text-slate-900 transition-colors"
           aria-label="Compartir en X"
           title="Compartir en X"
         >
-          <XIcon className="w-5 h-5" />
+          <XIcon className="w-4 h-4" />
         </button>
 
         <button
           onClick={shareIG}
-          className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 text-white hover:opacity-90 transition-opacity"
+          className="text-slate-500 hover:text-pink-600 transition-colors"
           aria-label="Compartir en Instagram"
           title="Compartir en Instagram"
         >
-          <InstagramIcon className="w-5 h-5" />
+          <InstagramIcon className="w-4 h-4" />
         </button>
       </div>
     </div>
