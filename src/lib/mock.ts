@@ -13,8 +13,11 @@ export type Category =
 export type Urgency = 'low' | 'medium' | 'high';
 export type Visibility = 'public' | 'responders_only' | 'reviewer_only';
 
+export type MediaType = 'image' | 'video';
+
 export interface MediaItem {
   id: string;
+  type: MediaType;
   url: string;
   thumbnailUrl: string;
   caption?: string;
@@ -92,6 +95,7 @@ export const mockIncidents: Incident[] = [
     media: [
       {
         id: 'm1',
+        type: 'image',
         url: 'https://images.unsplash.com/photo-1504754524776-8f4f37790ca0?w=800&q=80',
         thumbnailUrl: 'https://images.unsplash.com/photo-1504754524776-8f4f37790ca0?w=200&q=60',
         caption: 'Vía bloqueada',
@@ -129,6 +133,7 @@ export const mockIncidents: Incident[] = [
     media: [
       {
         id: 'm2',
+        type: 'image',
         url: 'https://images.unsplash.com/photo-1587351021759-3e566b2af12a?w=800&q=80',
         thumbnailUrl: 'https://images.unsplash.com/photo-1587351021759-3e566b2af12a?w=200&q=60',
         caption: 'Lista de insumos',
@@ -151,12 +156,14 @@ export const mockIncidents: Incident[] = [
     media: [
       {
         id: 'm3',
+        type: 'image',
         url: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=800&q=80',
         thumbnailUrl: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=200&q=60',
         caption: 'Refugio',
       },
       {
         id: 'm4',
+        type: 'image',
         url: 'https://images.unsplash.com/photo-1531206715517-5c0ba140b2b8?w=800&q=80',
         thumbnailUrl: 'https://images.unsplash.com/photo-1531206715517-5c0ba140b2b8?w=200&q=60',
         caption: 'Donaciones',
@@ -179,6 +186,7 @@ export const mockIncidents: Incident[] = [
     media: [
       {
         id: 'm5',
+        type: 'image',
         url: 'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=800&q=80',
         thumbnailUrl: 'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=200&q=60',
         caption: 'Posible ubicación',
@@ -202,6 +210,7 @@ export const mockReports: Report[] = [
     media: [
       {
         id: 'rm1',
+        type: 'image',
         url: 'https://images.unsplash.com/photo-1504754524776-8f4f37790ca0?w=800&q=80',
         thumbnailUrl: 'https://images.unsplash.com/photo-1504754524776-8f4f37790ca0?w=200&q=60',
       },
@@ -247,6 +256,7 @@ export const mockReports: Report[] = [
     media: [
       {
         id: 'rm2',
+        type: 'image',
         url: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=800&q=80',
         thumbnailUrl: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=200&q=60',
       },
