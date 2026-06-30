@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import MediaUploader from '@/components/MediaUploader';
+import SourceUrlList from '@/components/SourceUrlList';
 import { Category, categoryLabels, Urgency } from '@/lib/mock';
 
 const categories: Category[] = [
@@ -25,7 +26,7 @@ export default function SubmitPage() {
     title: '',
     summary: '',
     location: '',
-    sourceUrl: '',
+    sourceUrls: [''],
     sourceHandle: '',
   });
 
@@ -65,14 +66,11 @@ export default function SubmitPage() {
         {tab === 'link' && (
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
-              URL pública <span className="text-slate-400">(Instagram, X, noticia...)</span>
+              URLs públicas <span className="text-slate-400">(Instagram, X, noticia...)</span>
             </label>
-            <input
-              type="url"
-              placeholder="https://instagram.com/p/..."
-              value={form.sourceUrl}
-              onChange={(e) => update('sourceUrl', e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-crisis-500"
+            <SourceUrlList
+              sources={form.sourceUrls}
+              onChange={(urls) => setForm((prev) => ({ ...prev, sourceUrls: urls }))}
             />
           </div>
         )}

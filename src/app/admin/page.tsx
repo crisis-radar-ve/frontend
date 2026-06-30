@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Reviewer, mockReviewers } from '@/lib/users';
 import { Category, categoryLabels, Urgency } from '@/lib/mock';
 import MediaUploader from '@/components/MediaUploader';
+import SourceUrlList from '@/components/SourceUrlList';
 
 const categories: Category[] = [
   'HELP_REQUESTED',
@@ -40,7 +41,7 @@ export default function AdminPage() {
     title: '',
     summary: '',
     location: '',
-    sourceUrl: '',
+    sourceUrls: [''],
     sourceHandle: '',
     publishImmediately: false,
   });
@@ -380,16 +381,13 @@ export default function AdminPage() {
                 />
               </div>
 
-              <div>
+              <div className="sm:col-span-2">
                 <label className="block text-sm font-medium text-slate-700 mb-1">
-                  URL fuente
+                  URLs fuente
                 </label>
-                <input
-                  type="url"
-                  placeholder="https://..."
-                  value={reportForm.sourceUrl}
-                  onChange={(e) => setReportForm({ ...reportForm, sourceUrl: e.target.value })}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-crisis-500"
+                <SourceUrlList
+                  sources={reportForm.sourceUrls}
+                  onChange={(urls) => setReportForm({ ...reportForm, sourceUrls: urls })}
                 />
               </div>
             </div>

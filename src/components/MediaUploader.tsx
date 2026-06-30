@@ -7,15 +7,20 @@ interface Props {
 }
 
 export default function MediaUploader({ onFilesSelected }: Props) {
-  const [previews, setPreviews] = useState<string[]>([]);
+  const [previews, setPreviews] = useState<{ url: string; type: 'image' | 'video' }[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFiles = (files: FileList | null) => {
     if (!files) return;
-    const fileArray = Array.from(files).filter((f) => f.type.startsWith('image/'));
-    const urls = fileArray.map((file) => URL.createObjectURL(file));
-    setPreviews((prev) => [...prev, ...urls]);
+    const fileArray = Array.from(files).filter(
+      (f) => f.type.startsWith('image/') || f.type.startsWith('video/')
+    );
+    const items = fileArray.map((file) => ({
+      url: URL.createObjectURL(file),
+      type: file.type.startsWith('video/') ? ('video' as const) : ('image' as const),
+    }));
+    setPreviews((prev) => [...prev, ...items]);
     onFilesSelected?.(fileArray);
   };
 
@@ -48,16 +53,16 @@ export default function MediaUploader({ onFilesSelected }: Props) {
         }`}
       >
         <p className="text-sm text-slate-600">
-          Arrastra fotos aquí o <span className="text-crisis-600 font-medium">haz clic</span> para
-          seleccionar
+          Arrastra fotos o videos aquí o{' '}
+          <span className="text-crisis-600 font-medium">haz clic</span> para seleccionar
         </p>
         <p className="text-xs text-slate-400 mt-1">
-          JPG, PNG, WEBP. Máx. 10 MB por imagen.
+          JPG, PNG, WEBP, MP4. Máx. 50 MB por archivo.
         </p>
         <input
           ref={inputRef}
           type="file"
-          accept="image/*"
+          accept="image/*,video/*"
           multiple
           className="hidden"
           onChange={onChange}
@@ -66,10 +71,24 @@ export default function MediaUploader({ onFilesSelected }: Props) {
 
       {previews.length > 0 && (
         <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-          {previews.map((url, idx) => (
-            <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-slate-200">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={url} alt={`preview-${idx}`} className="w-full h-full object-cover" />
+          {previews.map((item, idx) => (
+            <div
+              key={idx}
+              className="relative aspect-square rounded-lg overflow-hidden border border-slate-200"
+            >
+              {item.type === 'video' ? (
+                <video src={item.url} className="w-full h-full object-cover" />
+              ) : (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img src={item.url} alt={`preview-${idx}`} className="w-full h-full object-cover" />
+              )}
+              {item.type === 'video' && (
+                <span className="absolute inset-0 flex items-center justify-center">
+                  <span className="w-6 h-6 bg-black/60 text-white rounded-full text-xs flex items-center justify-center">
+                    ▶
+                  </span>
+                </span>
+              )}
               <button
                 type="button"
                 onClick={() => remove(idx)}
