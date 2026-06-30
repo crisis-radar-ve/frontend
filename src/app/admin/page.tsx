@@ -5,7 +5,7 @@ import { Reviewer, mockReviewers } from '@/lib/users';
 import { Category, categoryLabels, Urgency } from '@/lib/mock';
 import MediaUploader from '@/components/MediaUploader';
 import SourceUrlList from '@/components/SourceUrlList';
-import { api, setToken, clearToken } from '@/lib/api';
+import { api, setToken, clearToken, apiFetch } from '@/lib/api';
 
 const categories: Category[] = [
   'HELP_REQUESTED',
@@ -23,15 +23,9 @@ const categories: Category[] = [
 export default function AdminPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'reviewers' | 'publish'>('reviewers');
+  const [activeTab, setActiveTab] = useState<'reviewers' | 'publish' | 'collect'>('reviewers');
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
 
-  useEffect(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('crisisradar_token') : null;
-    if (token) setIsLoggedIn(true);
-  }, []);
-
-  // Reviewers state
   const [reviewers, setReviewers] = useState<Reviewer[]>(mockReviewers);
   const [isEditing, setIsEditing] = useState<Reviewer | null>(null);
   const [reviewerForm, setReviewerForm] = useState<Partial<Reviewer>>({
@@ -42,7 +36,6 @@ export default function AdminPage() {
     active: true,
   });
 
-  // Publish report state
   const [reportForm, setReportForm] = useState({
     category: '' as Category | '',
     urgency: 'medium' as Urgency,
@@ -53,6 +46,14 @@ export default function AdminPage() {
     sourceHandle: '',
     publishImmediately: false,
   });
+
+  const [collectStatus, setCollectStatus] = useState<string | null>(null);
+  const [collecting, setCollecting] = useState(false);
+
+  useEffect(() => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('crisisradar_token') : null;
+    if (token) setIsLoggedIn(true);
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,6 +70,68 @@ export default function AdminPage() {
   const handleLogout = () => {
     clearToken();
     setIsLoggedIn(false);
+  };
+
+  const resetReviewerForm = () => {
+    setReviewerForm({ name: '', email: '', role: 'reviewer', organization: '', active: true });
+    setIsEditing(null);
+  };
+
+  const handleReviewerSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reviewerForm.name || !reviewerForm.email) return;
+
+    if (isEditing) {
+      setReviewers((prev) =>
+        prev.map((r) =>
+          r.id === isEditing.id
+            ? { ...r, ...(reviewerForm as Omit<Reviewer, 'id' | 'createdAt'>) }
+            : r
+        )
+      );
+    } else {
+      const newReviewer: Reviewer = {
+        id: `u${Date.now()}`,
+        name: reviewerForm.name!,
+        email: reviewerForm.email!,
+        role: reviewerForm.role as 'reviewer' | 'admin',
+        organization: reviewerForm.organization || '',
+        active: reviewerForm.active ?? true,
+        createdAt: new Date().toISOString().split('T')[0],
+      };
+      setReviewers((prev) => [...prev, newReviewer]);
+    }
+    resetReviewerForm();
+  };
+
+  const handleEditReviewer = (reviewer: Reviewer) => {
+    setIsEditing(reviewer);
+    setReviewerForm({ ...reviewer });
+  };
+
+  const handleDeleteReviewer = (id: string) => {
+    if (confirm('¿Seguro que quieres eliminar este revisor?')) {
+      setReviewers((prev) => prev.filter((r) => r.id !== id));
+    }
+  };
+
+  const handlePublish = (e: React.FormEvent) => {
+    e.preventDefault();
+    const action = reportForm.publishImmediately ? 'publicado' : 'enviado a revisión';
+    alert(`Reporte ${action} (modo prototipo)`);
+  };
+
+  const handleCollect = async (source: 'rss' | 'google-news') => {
+    setCollecting(true);
+    setCollectStatus(null);
+    try {
+      const res = await apiFetch(`/collect/${source}`, { method: 'POST' });
+      setCollectStatus(`Recolectados: ${res.created}, omitidos: ${res.skipped}`);
+    } catch (err: any) {
+      setCollectStatus(`Error: ${err.message}`);
+    } finally {
+      setCollecting(false);
+    }
   };
 
   if (!isLoggedIn) {
@@ -113,57 +176,6 @@ export default function AdminPage() {
     );
   }
 
-  // Reviewer handlers
-  const resetReviewerForm = () => {
-    setReviewerForm({ name: '', email: '', role: 'reviewer', organization: '', active: true });
-    setIsEditing(null);
-  };
-
-  const handleReviewerSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!reviewerForm.name || !reviewerForm.email) return;
-
-    if (isEditing) {
-      setReviewers((prev) =>
-        prev.map((r) =>
-          r.id === isEditing.id
-            ? { ...r, ...(reviewerForm as Omit<Reviewer, 'id' | 'createdAt'>) }
-            : r
-        )
-      );
-    } else {
-      const newReviewer: Reviewer = {
-        id: `u${Date.now()}`,
-        name: reviewerForm.name!,
-        email: reviewerForm.email!,
-        role: reviewerForm.role as 'reviewer' | 'admin',
-        organization: reviewerForm.organization || '',
-        active: reviewerForm.active ?? true,
-        createdAt: new Date().toISOString().split('T')[0],
-      };
-      setReviewers((prev) => [...prev, newReviewer]);
-    }
-    resetReviewerForm();
-  };
-
-  const handleEditReviewer = (reviewer: Reviewer) => {
-    setIsEditing(reviewer);
-    setReviewerForm({ ...reviewer });
-  };
-
-  const handleDeleteReviewer = (id: string) => {
-    if (confirm('¿Seguro que quieres eliminar este revisor?')) {
-      setReviewers((prev) => prev.filter((r) => r.id !== id));
-    }
-  };
-
-  // Publish handler
-  const handlePublish = (e: React.FormEvent) => {
-    e.preventDefault();
-    const action = reportForm.publishImmediately ? 'publicado' : 'enviado a revisión';
-    alert(`Reporte ${action} (modo prototipo)`);
-  };
-
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
@@ -200,9 +212,19 @@ export default function AdminPage() {
         >
           Publicar reporte
         </button>
+        <button
+          onClick={() => setActiveTab('collect')}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+            activeTab === 'collect'
+              ? 'border-crisis-600 text-crisis-600'
+              : 'border-transparent text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          Recolectar
+        </button>
       </div>
 
-      {activeTab === 'reviewers' ? (
+      {activeTab === 'reviewers' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="bg-white rounded-lg border border-slate-200 p-4">
             <h2 className="font-semibold text-slate-900 mb-4">
@@ -351,7 +373,9 @@ export default function AdminPage() {
             </div>
           </div>
         </div>
-      ) : (
+      )}
+
+      {activeTab === 'publish' && (
         <div className="bg-white rounded-lg border border-slate-200 p-6">
           <h2 className="font-semibold text-slate-900 mb-4">Publicar reporte manualmente</h2>
 
@@ -479,6 +503,38 @@ export default function AdminPage() {
               {reportForm.publishImmediately ? 'Publicar ahora' : 'Enviar a revisión'}
             </button>
           </form>
+        </div>
+      )}
+
+      {activeTab === 'collect' && (
+        <div className="bg-white rounded-lg border border-slate-200 p-6">
+          <h2 className="font-semibold text-slate-900 mb-4">Recolectar información</h2>
+          <p className="text-sm text-slate-500 mb-4">
+            Ejecuta scrapers para traer reportes desde fuentes públicas.
+          </p>
+
+          <div className="flex flex-wrap gap-3 mb-4">
+            <button
+              onClick={() => handleCollect('rss')}
+              disabled={collecting}
+              className="px-4 py-2 bg-crisis-600 text-white text-sm font-medium rounded-lg hover:bg-crisis-700 disabled:opacity-50"
+            >
+              {collecting ? 'Recolectando...' : 'RSS feeds'}
+            </button>
+            <button
+              onClick={() => handleCollect('google-news')}
+              disabled={collecting}
+              className="px-4 py-2 bg-slate-100 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-200 disabled:opacity-50"
+            >
+              Google News
+            </button>
+          </div>
+
+          {collectStatus && (
+            <p className={`text-sm ${collectStatus.startsWith('Error') ? 'text-red-600' : 'text-emerald-600'}`}>
+              {collectStatus}
+            </p>
+          )}
         </div>
       )}
     </div>
